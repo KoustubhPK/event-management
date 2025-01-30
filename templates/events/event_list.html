@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}
+    Event List
+{% endblock %}
+
+{% block content %}
+
+<body>
+    <div class="container my-2">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <h1>Event List</h1>
+                <button class="btn btn-outline-dark mt-1" onclick="location.href='{% url 'add_event' %}'"><i class="bi bi-file-earmark-plus"></i> Add Event</button>
+            </div>
+        </div>
+
+        <table class="table" id="myTable">
+            <thead>
+                <tr>
+                <th scope="col">No.</th>
+                <th scope="col">Name</th>
+                <th scope="col">Guests</th>
+                <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                <tr>
+                    <th scope="row">{{forloop.counter}}</th>
+                    <td><a href="{% url 'event_detail' event.pk %}">{{ event.name }}</a></td>
+                    <td>{{ event.guests.count }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-warning" onclick="location.href='{% url 'edit_event' event.pk %}'"><i class="bi bi-pencil-square"></i> Edit</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteEventModal" data-event-id="{{ event.pk }}" data-event-name="{{ event.name }}">
+                            <i class="bi bi-trash3"></i> Delete
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+
+    
+
+    <style>
+        .highlighted-text {
+          background-color: yellow;
+          font-weight: bold;
+        }
+    </style>
+
+    <!-- Modal -->
+    <div class="modal fade" id="deleteEventModal" tabindex="-1" aria-labelledby="deleteEventModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteEventModalLabel">Confirm Event Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete the event <span class="highlighted-text" id="eventName"></span>?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteEventForm" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var deleteEventModal = document.getElementById('deleteEventModal');
+        deleteEventModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget; // Button that triggered the modal
+            var eventId = button.getAttribute('data-event-id');
+            var eventName = button.getAttribute('data-event-name');
+
+            // Update the action URL for the form
+            var form = document.getElementById('deleteEventForm');
+            form.action = `/events/${eventId}/delete/`;
+
+            // Set the event name in the modal body
+            var eventNameSpan = document.getElementById('eventName');
+            eventNameSpan.textContent = eventName;
+        });
+    });
+</script>
+
+{% endblock content %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}
+    Edit Guest
+{% endblock %}
+
+{% block content %}
+
+<body>
+    <div class="container my-2">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <h1>
+                    Edit Guest
+                </h1>
+            </div>
+    
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-outline-dark"><i class="bi bi-save2"></i> Save</button>
+            </form>
+            <a href="{% url 'guest_list' %}">Back to Guest List</a>
+        </div>
+    </div>
+</body>
+
+{% endblock content %}

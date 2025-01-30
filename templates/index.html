@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+    Home
+{% endblock %}
+
+{% block content %}
+
+<head>
+    <style>
+        .table-centered th, .table-centered td {
+            text-align: center;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="container text-center my-2">
+        <div class="row justify-content-center mb-3">
+            <div class="col-md-8">
+                <h1>Dashboard</h1>
+                <button class="btn btn-outline-success mt-1" onclick="location.href='{% url 'add_guest' %}'"><i class="bi bi-person-add"></i> Add Guest</button>
+                <button class="btn btn-outline-dark mt-1" onclick="location.href='{% url 'add_event' %}'"><i class="bi bi-file-earmark-plus"></i> Add Event</button>
+            </div>
+        </div>
+        
+        <div class="row justify-content-center mb-3">
+            <section class="section">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card shadow bg-white">
+                            <div class="card-body">
+                                {% comment %} <h5 class="card-title">Pie Chart</h5> {% endcomment %}
+                                <!-- Pie Chart -->
+                                <div id="pieChart" style="min-height: 300px;" class="echart"></div>
+                
+                                <script>
+                                    document.addEventListener("DOMContentLoaded", () => {
+                                        echarts.init(document.querySelector("#pieChart")).setOption({
+                                        title: {
+                                            text: 'Guest Management',
+                                            subtext: '2024',
+                                            left: 'center'
+                                        },
+                                        tooltip: {
+                                            trigger: 'item'
+                                        },
+                                        toolbox: {
+                                            show : true,
+                                            feature : {
+                                                mark : {show: true},
+                                                magicType : {
+                                                    show: true, 
+                                                },
+                                                restore : {show: true},
+                                                saveAsImage : {show: true}
+                                            }
+                                        },
+                                        legend: {
+                                            orient: 'vertical',
+                                            left: 'left'
+                                        },
+                                        series: [{
+                                            type: 'pie',
+                                            radius: '50%',
+                                            data: [{
+                                                value: {{ total_guests }},
+                                                name: "Total Guests"
+                                            },
+                                            {
+                                                value: {{ total_events }},
+                                                name: "Total Events"
+                                            },
+                                            {
+                                                value: {{ unattended_guests }},
+                                                name: "Unattended"
+                                            },
+                                            {
+                                                value: {{ most_involved_guest_count }},
+                                                name: "Most Involved"
+                                            },
+                                            
+                                            ],
+                                            emphasis: {
+                                            itemStyle: {
+                                                shadowBlur: 10,
+                                                shadowOffsetX: 0,
+                                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                            }
+                                            }
+                                        }]
+                                        });
+                                    });
+                                </script>
+                                <!-- End Pie Chart -->
+                            </div>
+                        </div>
+                    </div>
+            
+                    <div class="col-lg-6">
+                        <div class="card shadow bg-white">
+                            <div class="card-body">
+                                {% comment %} <h5 class="card-title">Bar Chart</h5> {% endcomment %}
+                
+                                <!-- Bar Chart -->
+                                <div id="barChart" style="min-height: 300px;" class="echart"></div>
+                
+                                <script>
+                                    document.addEventListener("DOMContentLoaded", () => {
+                                        const eventNames = {{ event_names|safe }};
+                                        const guestCounts = {{ guest_counts|safe }};
+                                        echarts.init(document.querySelector("#barChart")).setOption({
+                                        title: {
+                                            text: 'Event Management',
+                                            subtext: '2024',
+                                            left: 'center'
+                                        },
+                                        xAxis: {
+                                            type: 'category',
+                                            data: eventNames,
+                                            axisLabel: {
+                                                interval: 0,
+                                                rotate: 45,
+                                                fontSize: 10
+                                            }
+                                        },
+                                        yAxis: {
+                                            type: 'value'
+                                        },
+                                        tooltip: {
+                                            trigger: 'axis',
+                                            axisPointer: {
+                                                type: 'shadow'
+                                            },
+                                            formatter: function(params) {
+                                                return '' + params[0].value;
+                                            }
+                                        },
+                                        toolbox: {
+                                            show : true,
+                                            feature : {
+                                                mark : {show: true},
+                                                magicType : {show: true, type: ['bar', 'line']},
+                                                restore : {show: true},
+                                                saveAsImage : {show: true}
+                                            }
+                                        },
+                                        series: [{
+                                            data: guestCounts,
+                                            type: 'bar',
+                                            markPoint : {
+                                                data : [
+                                                    {type : 'max'},
+                                                    {type : 'min'}
+                                                ]
+                                            },
+                                            markLine : {
+                                                data : [
+                                                    {type : 'average'}
+                                                ]
+                                            }
+                                        }]
+                                        });
+                                    });
+                                </script>
+                                <!-- End Bar Chart -->
+                            </div>
+                        </div>
+                    </div>
+    
+                </div>
+            </section>
+        </div>
+
+        <div class="row justify-content-center mb-3">
+            <section class="section">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="card shadow bg-white">
+                            <div class="card-body">
+                                <div id="attendedGrowthChart">
+                                    <small class="d-inline-flex mb-3 px-2 py-1 fw-semibold text-success-emphasis bg-success-subtle border border-success-subtle rounded-2">
+                                        <a class="event-count-link text-success-emphasis" href="" data-bs-toggle="modal" data-bs-target="#attendedGuestsModal">
+                                            Attended Guests: {{ attended_guests_count }}
+                                        </a>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card shadow bg-white">
+                            <div class="card-body">
+                                <div id="mostGrowthChart">
+                                    <small class="d-inline-flex mb-3 px-2 py-1 fw-semibold text-primary-emphasis bg-primary-subtle border border-primary-subtle rounded-2">
+                                        <a class="event-count-link text-primary-emphasis" href="" data-bs-toggle="modal" data-bs-target="#mostInvolvedModal">
+                                            Most Involved Guests: {{ most_involved_guest_count }}
+                                        </a>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card shadow bg-white">
+                            <div class="card-body">
+                                <div id="leastGrowthChart">
+                                    <small class="d-inline-flex mb-3 px-2 py-1 fw-semibold text-danger-emphasis bg-danger-subtle border border-danger-subtle rounded-2">
+                                        <a class="event-count-link text-danger-emphasis" href="" data-bs-toggle="modal" data-bs-target="#leastInvolvedModal">
+                                            Unattended Guests: {{ least_involved_guest_count }}
+                                        </a>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Attended Guests Modal -->
+        <div class="modal fade" id="attendedGuestsModal" tabindex="-1" aria-labelledby="attendedGuestsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="attendedGuestsModalLabel">Attended Guests</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <ul>
+                            {% for guest in attended_guests %}
+                                <li>{{ guest.name }} (Events: {{ guest.event_set.count }})</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Most Involved Guests Modal -->
+        <div class="modal fade" id="mostInvolvedModal" tabindex="-1" aria-labelledby="mostInvolvedModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="mostInvolvedModalLabel">Most Involved Guests</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <ul>
+                            {% for guest in most_involved_guests %}
+                                <li>{{ guest.name }} (Events: {{ guest.event_set.count }})</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Least Involved Guests Modal -->
+        <div class="modal fade" id="leastInvolvedModal" tabindex="-1" aria-labelledby="leastInvolvedModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="leastInvolvedModalLabel">Unattended Guests</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <ul>
+                            {% for guest in least_involved_guests %}
+                                <li>{{ guest.name }} (Events: {{ guest.event_set.count }})</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+
+<script>
+    var guestData = {
+        attendedGuests: "{{ attended_guests_percentile |floatformat:2 }}",
+        mostInvolved: "{{ most_involved_guest_percentage|floatformat:2 }}",
+        leastInvolved: "{{ least_involved_guest_percentage|floatformat:2 }}",
+    }
+</script>
+
+<!-- Attended Guests JS -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var attendedGuestsModal = document.getElementById('attendedGuestsModal');
+        attendedGuestsModal.addEventListener('show.bs.modal', function (event) {
+            var modalBody = attendedGuestsModal.querySelector('.modal-body ul');
+            modalBody.innerHTML = '';  // Clear previous content
+            {% for guest in attended_guests %}
+                var listItem = document.createElement('li');
+                listItem.textContent = '{{ guest.name }} (Events: {{ guest.event_set.count }})';
+                modalBody.appendChild(listItem);
+            {% endfor %}
+        });
+    });
+</script>
+
+<!-- Most Involved Guests JS -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var mostInvolvedModal = document.getElementById('mostInvolvedModal');
+        mostInvolvedModal.addEventListener('show.bs.modal', function (event) {
+            var modalBody = mostInvolvedModal.querySelector('.modal-body ul');
+            modalBody.innerHTML = '';  // Clear previous content
+            {% for guest in most_involved_guests %}
+                var listItem = document.createElement('li');
+                listItem.textContent = '{{ guest.name }} (Events: {{ guest.event_set.count }})';
+                modalBody.appendChild(listItem);
+            {% endfor %}
+        });
+    });
+</script>
+
+<!-- Least Involved Guests JS -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var leastInvolvedModal = document.getElementById('leastInvolvedModal');
+        leastInvolvedModal.addEventListener('show.bs.modal', function (event) {
+            var modalBody = leastInvolvedModal.querySelector('.modal-body ul');
+            modalBody.innerHTML = '';  // Clear previous content
+            {% for guest in least_involved_guests %}
+                var listItem = document.createElement('li');
+                listItem.textContent = '{{ guest.name }} (Events: {{ guest.event_set.count }})';
+                modalBody.appendChild(listItem);
+            {% endfor %}
+        });
+    });
+</script>
+
+<script src="{% static "js/echarts.min.js" %}"></script>
+
+<!-- Growth JS -->
+<script src="{% static "js/dashboards-analytics.js" %}"></script>
+<script src="{% static "js/config.js" %}"></script>
+<script src="{% static "js/apexcharts.js" %}"></script>
+
+
+{% endblock content %}

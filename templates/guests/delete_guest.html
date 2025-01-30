@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}
+    Delete Guest
+{% endblock %}
+
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <title>Delete Guest</title>
+</head>
+<body>
+    <h1>Delete Guest</h1>
+    <p>Are you sure you want to delete "{{ guest.name }}"?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Yes, delete</button>
+    </form>
+    <a href="{% url 'guest_list' %}">Cancel</a>
+</body>
+
+{% endblock content %}

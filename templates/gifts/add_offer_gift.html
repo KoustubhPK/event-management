@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}
+    Add Offer Gift
+{% endblock %}
+
+{% block content %}
+<div class="container my-2">
+    <div class="row justify-content-center">
+        {% if no_stock %}
+            <div class="alert alert-warning" role="alert">
+                No gifts available to offer. Please add more stock or check back later.
+            </div>
+            <a href="{% url 'gift_list' %}">Go back</a>
+        {% else %}
+            <div class="col-md-8 text-center">
+                <h1>Offer Gift</h1>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+                <button type="submit" class="btn btn-outline-success"><i class="bi bi-gift"></i> Offer Gift</button>
+            </form>
+            <a href="{% url 'gift_list' %}">Cancel</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}
+    Event Detail
+{% endblock %}
+
+{% block content %}
+
+<body>
+    <div class="container my-2">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <h1>{{ event.name }}</h1>
+                <small class="d-inline-flex mb-3 px-2 py-1 fw-semibold text-success-emphasis bg-success-subtle border border-success-subtle rounded-2">
+                    Guests: {{ guest_count }}
+                </small>
+            </div>
+        </div>
+
+        <table class="table" id="myTable">
+            <thead>
+            <tr>
+                <th scope="col">No.</th>
+                <th scope="col">Name</th>
+                <th scope="col">Action</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for guest in event.guests.all %}
+                <tr>
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <td>{{ guest.name }}</td>
+                    <td>
+                        <!-- Button to trigger modal -->
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#removeGuestModal" data-event-id="{{ event.pk }}" data-guest-id="{{ guest.pk }}" data-guest-name="{{ guest.name }}">
+                            <i class="bi bi-trash3"></i> Remove
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{% url 'event_list' %}">Back to List</a>
+    </div>
+
+
+    <style>
+        .highlighted-text {
+          background-color: yellow;
+          font-weight: bold;
+        }
+    </style>
+
+    <!-- Modal -->
+    <div class="modal fade" id="removeGuestModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Confirm Removal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to remove <span class="highlighted-text" id="guestName"></span> from the event?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> Cancel</button>
+                    <a href="#" id="confirmRemoveButton" class="btn btn-danger"><i class="bi bi-trash3"></i> Remove</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var removeGuestModal = document.getElementById('removeGuestModal');
+        removeGuestModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget; // Button that triggered the modal
+            var eventId = button.getAttribute('data-event-id');
+            var guestId = button.getAttribute('data-guest-id');
+            var guestName = button.getAttribute('data-guest-name');
+            
+            // Construct the URL directly
+            var url = `/events/${eventId}/remove_guest/${guestId}/`;
+            console.log('URL:', url);  // For debugging
+
+            var confirmButton = removeGuestModal.querySelector('#confirmRemoveButton');
+            confirmButton.setAttribute('href', url);
+
+            // Set the guest name in the modal body
+            var guestNameSpan = removeGuestModal.querySelector('#guestName');
+            guestNameSpan.textContent = guestName;
+        });
+    });
+</script>
+
+{% endblock content %}

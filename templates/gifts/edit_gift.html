@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}
+    Edit Gift
+{% endblock %}
+
+{% block content %}
+<body>
+    <div class="container my-2">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <h1>Edit Gift</h1>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-pencil-square"></i> Update Gift</button>
+                <a href="{% url 'gift_list' %}" class="btn btn-sm btn-outline-dark"><i class="bi bi-x-lg"></i> Cancel</a>
+            </form>
+        </div>
+    </div>
+</body>
+{% endblock content %}

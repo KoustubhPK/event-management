@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Guest List
+{% endblock %}
+
+{% block content %}
+
+<body>
+
+    <div class="container my-2">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <h1>Guest List</h1>
+                <button class="btn btn-outline-success mt-1" onclick="location.href='{% url 'add_guest' %}'"><i class="bi bi-person-add"></i> Add Guest</button>
+                <button class="btn btn-outline-dark mt-1" onclick="location.href='{% url 'export_guests_xlsx' %}'"><i class="bi bi-file-earmark-spreadsheet"></i> Export to Excel</button>
+            </div>
+        </div>
+
+        <table class="table" id="myTable">
+            <thead>
+            <tr>
+                <th scope="col">No.</th>
+                <th scope="col">Name</th>
+                <th scope="col">Events</th>
+                <th scope="col">Action</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for guest in guests %}
+                <tr>
+                    <th scope="row">{{forloop.counter}}</th>
+                    <td>{{ guest.name }}</td>
+                    <td>
+                        <a href="#" class="event-count-link" data-bs-toggle="modal" data-bs-target="#eventCountModal" data-guest-name="{{ guest.name }}" data-event-names="{{ guest.events|join:',' }}">
+                            {{ guest.events|length }}
+                        </a>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-warning" onclick="location.href='{% url 'edit_guest' guest.pk %}'"><i class="bi bi-pencil-square"></i> Edit</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteGuestModal" data-guest-id="{{ guest.pk }}" data-guest-name="{{ guest.name }}">
+                            <i class="bi bi-trash3"></i> Delete
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <style>
+        .highlighted-text {
+          background-color: yellow;
+          font-weight: bold;
+        }
+    </style>
+
+
+    <!-- Event Count Modal -->
+    <div class="modal fade" id="eventCountModal" tabindex="-1" aria-labelledby="eventCountModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="eventCountModalLabel">Guest Events</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Name:</strong> <span id="modalGuestName"></span></p>
+                    <p><strong>Events:</strong></p>
+                    <ul id="modalEventNames"></ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="deleteGuestModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Confirm Removal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to remove <span class="highlighted-text" id="guestName"></span> from the guest list?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> Cancel</button>
+                    <form id="deleteGuestForm" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger"><i class="bi bi-trash3"></i> Remove</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var deleteGuestModal = document.getElementById('deleteGuestModal');
+        deleteGuestModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget; // Button that triggered the modal
+            var guestId = button.getAttribute('data-guest-id');
+            var guestName = button.getAttribute('data-guest-name');
+
+            // Update the action URL for the form
+            var form = document.getElementById('deleteGuestForm');
+            form.action = `/guests/${guestId}/delete/`;
+
+            // Set the guest name in the modal body
+            var guestNameSpan = document.getElementById('guestName');
+            guestNameSpan.textContent = guestName;
+        });
+    });
+</script>
+
+<!-- Event Count JS -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var eventCountModal = document.getElementById('eventCountModal');
+        eventCountModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget; // Button that triggered the modal
+            var guestName = button.getAttribute('data-guest-name');
+            var eventNames = button.getAttribute('data-event-names').split(',');
+    
+            // Update the modal's content
+            var modalGuestName = eventCountModal.querySelector('#modalGuestName');
+            var modalEventNames = eventCountModal.querySelector('#modalEventNames');
+    
+            modalGuestName.textContent = guestName;
+            modalEventNames.innerHTML = '';
+    
+            eventNames.forEach(function(eventName) {
+                var li = document.createElement('li');
+                li.textContent = eventName;
+                modalEventNames.appendChild(li);
+            });
+        });
+    });
+</script>
+
+{% endblock content %}

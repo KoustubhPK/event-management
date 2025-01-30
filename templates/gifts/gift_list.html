@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    Gifts List
+{% endblock %}
+
+{% block content %}
+
+<body>
+
+    <div class="container my-2">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <h1>Gifts</h1>
+                {% comment %} <button class="btn btn-outline-success mt-1" onclick="location.href='{% url 'add_gift' %}'"><i class="bi bi-gift"></i> Add Gifts</button> {% endcomment %}
+            </div>
+
+            <ul class="nav nav-tabs mb-2" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="gift-tab" data-bs-toggle="tab" data-bs-target="#gift-tab-pane" type="button" role="tab" aria-controls="gift-tab-pane" aria-selected="true">Gifts</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="offered-tab" data-bs-toggle="tab" data-bs-target="#offered-tab-pane" type="button" role="tab" aria-controls="offered-tab-pane" aria-selected="false">Offered</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="received-tab" data-bs-toggle="tab" data-bs-target="#received-tab-pane" type="button" role="tab" aria-controls="received-tab-pane" aria-selected="false">Received</button>
+                </li>
+            </ul>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="gift-tab-pane" role="tabpanel" aria-labelledby="gift-tab" tabindex="0">
+                    <div class="col-md-12 text-center mb-2">
+                        <button class="btn btn-outline-success mt-1" onclick="location.href='{% url 'add_gift' %}'"><i class="bi bi-gift"></i> Add Gifts</button>
+                    </div>
+
+                    <!-- Gift Table Start-->
+                    <section class="section">
+                        <div class="row">
+
+                            <div class="col-lg-6">
+                                <table class="table" id="myTable">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">No.</th>
+                                        <th scope="col">Gifts</th>
+                                        <th scope="col">Description</th>
+                                        <th scope="col">Available</th>
+                                        <th scope="col">Total</th>
+                                        <th scope="col">File</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for gift in gifts %}
+                                        <tr>
+                                            <th scope="row">{{ forloop.counter }}</th>
+                                            <td>{{ gift.name }}</td>
+                                            <td>{% if gift.description %}{{ gift.description }}{% else %}NA{% endif %}</td>
+                                            <td>{{ gift.available_stock }}</td>
+                                            <td>{{ gift.stock  }}</td>
+                                            <td>
+                                                {% if gift.file %}
+                                                    <img src="{{ gift.file.url }}" class="object-fit-contain rounded" alt="Image" style="width: 32px; height: 32px;">
+                                                {% else %}
+                                                    <img src="{% static "img/gift.png" %}" class="object-fit-contain rounded" alt="Image" style="width: 32px; height: 32px;">
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'edit_gift' gift.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil-square"></i> </a>
+                                                <a href="{% url 'delete_gift' gift.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <div class="card-body">
+                                    {% comment %} <h5 class="card-title">Bar Chart</h5> {% endcomment %}
+                    
+                                    <!-- Bar Chart -->
+                                    <div id="barChart" style="min-height: 300px;" class="echart"></div>
+                    
+                                    <script>
+                                        document.addEventListener("DOMContentLoaded", () => {
+                                            const giftNames = {{ gift_names|safe }};
+                                            const guestCounts = {{ guest_counts|safe }};
+                                            echarts.init(document.querySelector("#barChart")).setOption({
+                                            title: {
+                                                text: 'Gift Management',
+                                                subtext: '2024',
+                                                left: 'center'
+                                            },
+                                            xAxis: {
+                                                type: 'category',
+                                                data: giftNames,
+                                                axisLabel: {
+                                                    interval: 0,
+                                                    rotate: 45,
+                                                    fontSize: 10
+                                                }
+                                            },
+                                            yAxis: {
+                                                type: 'value'
+                                            },
+                                            tooltip: {
+                                                trigger: 'axis',
+                                                axisPointer: {
+                                                    type: 'shadow'
+                                                },
+                                                formatter: function(params) {
+                                                    return 'Guests: ' + params[0].value;
+                                                }
+                                            },
+                                            toolbox: {
+                                                show : true,
+                                                feature : {
+                                                    mark : {show: true},
+                                                    magicType : {show: true, type: ['bar', 'line']},
+                                                    restore : {show: true},
+                                                    saveAsImage : {show: true}
+                                                }
+                                            },
+                                            series: [{
+                                                data: guestCounts,
+                                                type: 'bar',
+                                                markPoint : {
+                                                    data : [
+                                                        {type : 'max'},
+                                                        {type : 'min'}
+                                                    ]
+                                                },
+                                                markLine : {
+                                                    data : [
+                                                        {type : 'average'}
+                                                    ]
+                                                }
+                                            }]
+                                            });
+                                        });
+                                    </script>
+                                    <!-- End Bar Chart -->
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </section>
+                    <!-- Gift Table End-->
+                    
+                </div>
+
+                <div class="tab-pane fade" id="offered-tab-pane" role="tabpanel" aria-labelledby="offered-tab" tabindex="0">
+                    <div class="col-md-12 text-center">
+                        <button class="btn btn-outline-success mt-1" onclick="location.href='{% url 'add_offer_gift' %}'"><i class="bi bi-gift"></i> Offer Gifts</button>
+                    </div>
+                    
+                    <!-- Offered Gift Table Start-->
+                    <table class="table" id="myTable">
+                        <thead>
+                        <tr>
+                            <th scope="col">No.</th>
+                            <th scope="col">Gift</th>
+                            <th scope="col">Guests</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% for offer_gift in offered_gifts %}
+                            <tr>
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td>{{ offer_gift.gift }}</td>
+                                <td><a href="{% url 'offered_gift_detail' offer_gift.pk %}">{{ offer_gift.guests.count }}</a></td>
+                                <td>
+                                    <a href="{% url 'edit_offered_gift' offer_gift.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil-square"></i> </a>
+                                    <a href="{% url 'delete_offered_gift' offer_gift.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <!-- Offered Gift Table End-->
+                </div>
+
+                <div class="tab-pane fade" id="received-tab-pane" role="tabpanel" aria-labelledby="received-tab" tabindex="0">
+                    <div class="col-md-12 text-center">
+                        <button class="btn btn-outline-success mt-1" onclick="location.href='{% url 'add_receive_gift' %}'"><i class="bi bi-gift"></i> Receive Gifts</button>
+                    </div>
+                    
+                    <!-- Received Gift Table Start-->
+                    <table class="table" id="myTable">
+                        <thead>
+                        <tr>
+                            <th scope="col">No.</th>
+                            <th scope="col">From</th>
+                            <th scope="col">Gifts</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">File</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% for receive_gift in received_gifts %}
+                            <tr>
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td>{{ receive_gift.guest }}</td>
+                                <td>{{ receive_gift.name }}</td>
+                                <td>{% if receive_gift.description %}{{ receive_gift.description }}{% else %}NA{% endif %}</td>
+                                <td>
+                                    {% if receive_gift.file %}
+                                        <img src="{{ receive_gift.file.url }}" class="rounded" alt="Image" style="width: 32px; height: 32px;">
+                                    {% else %}
+                                        <img src="{% static "img/return-gift.png" %}" class="rounded" alt="Image" style="width: 32px; height: 32px;">
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <!-- Received Gift Table End-->
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+
+<!-- DOMContentLoaded Selected Tab Persists on Refresh-->
+<script>
+    // Save selected tab to localStorage
+    document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function (e) {
+            localStorage.setItem('activeTab', e.target.id);
+        });
+    });
+
+    // Load the active tab from localStorage
+    document.addEventListener('DOMContentLoaded', function () {
+        const activeTab = localStorage.getItem('activeTab');
+        if (activeTab) {
+            const tab = new bootstrap.Tab(document.getElementById(activeTab));
+            tab.show();
+        } else {
+            // Default to the first tab if no active tab is saved in localStorage
+            const firstTab = document.querySelector('#myTab button[data-bs-toggle="tab"]:first-child');
+            if (firstTab) {
+                const tab = new bootstrap.Tab(firstTab);
+                tab.show();
+            }
+        }
+    });
+</script>
+
+<script src="{% static "js/echarts.min.js" %}"></script>
+
+<!-- Growth JS -->
+<script src="{% static "js/dashboards-analytics.js" %}"></script>
+<script src="{% static "js/config.js" %}"></script>
+<script src="{% static "js/apexcharts.js" %}"></script>
+
+{% endblock content %}
